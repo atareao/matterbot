@@ -19,6 +19,16 @@ impl Bot{
         }
     }
 
+    pub fn create_user(&self, username: &str, email: &str, password: &str) -> Result<Response, Error>{
+        let url = format!("{}://{}/api/v4/users", self.protocol, self.base_uri);
+        let body = json!({
+                "username": username,
+                "email": email,
+                "password": password
+            });
+        self.post(&url, Some(body))
+    }
+
     pub fn post_message(&self, channel_id: &str, message: &str, root_id: Option<&str>) -> Result<Response, Error>{
         let url = format!("{}://{}/api/v4/posts", self.protocol, self.base_uri);
         let body = if let Some(value) = root_id{

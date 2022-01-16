@@ -43,6 +43,24 @@ fn main() {
                                 .about("List channels")
                                 )
                     )
+        .subcommand(App::new("create")
+                    .about("Create")
+                    .subcommand(App::new("user")
+                                .about("Create a new user")
+                                .arg(Arg::new("username")
+                                     .short('u')
+                                     .required(true)
+                                     .takes_value(true))
+                                .arg(Arg::new("email")
+                                     .short('e')
+                                     .required(true)
+                                     .takes_value(true))
+                                .arg(Arg::new("password")
+                                     .short('p')
+                                     .required(true)
+                                     .takes_value(true))
+                                )
+                    )
         .subcommand(App::new("post")
                     .about("Post")
                     .subcommand(App::new("message")
@@ -68,6 +86,16 @@ fn main() {
             let message = subsub.value_of("message").unwrap();
             let post_id = subsub.value_of("post_id");
             match bot.post_message(channel_id, message, post_id){
+                Ok(result) => println!("{}", result.text().unwrap()),
+                Err(result) => println!("{}", result.to_string())
+            }
+        }
+    }else if let Some(sub) = matches.subcommand_matches("create"){
+        if let Some(subsub) = sub.subcommand_matches("user"){
+            let username = subsub.value_of("username").unwrap();
+            let email = subsub.value_of("email").unwrap();
+            let password = subsub.value_of("password").unwrap();
+            match bot.create_user(username, email, password){
                 Ok(result) => println!("{}", result.text().unwrap()),
                 Err(result) => println!("{}", result.to_string())
             }
