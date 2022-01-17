@@ -19,6 +19,30 @@ impl Bot{
         }
     }
 
+    pub fn check_team(&self, name: &str)-> Result<Response, Error>{
+        let url = format!("{}://{}/api/v4/teams/{}/exists", self.protocol, self.base_uri, name);
+        self.get(&url)
+    }
+
+    pub fn create_channel(&self, team_id: &str, name: &str, display_name: &str, private: bool) -> Result<Response, Error>{
+        let url = format!("{}://{}/api/v4/channels", self.protocol, self.base_uri);
+        let body = json!({
+                "team_id": team_id,
+                "name": name,
+                "display_name": display_name,
+                "type": if private {"p"} else {"o"}
+            });
+        self.post(&url, Some(body))
+    }
+    pub fn create_team(&self, name: &str, display_name: &str, private: bool) -> Result<Response, Error>{
+        let url = format!("{}://{}/api/v4/teams", self.protocol, self.base_uri);
+        let body = json!({
+                "name": name,
+                "display_name": display_name,
+                "type": if private {"i"} else {"o"}
+            });
+        self.post(&url, Some(body))
+    }
     pub fn create_user(&self, username: &str, email: &str, password: &str) -> Result<Response, Error>{
         let url = format!("{}://{}/api/v4/users", self.protocol, self.base_uri);
         let body = json!({
@@ -44,6 +68,11 @@ impl Bot{
             })
         };
         self.post(&url, Some(body))
+    }
+
+    pub fn list_teasms(&self) -> Result<Response, Error>{
+        let url = format!("{}://{}/api/v4/teams", self.protocol, self.base_uri);
+        self.get(&url)
     }
 
     pub fn list_users(&self) ->Result<Response, Error>{

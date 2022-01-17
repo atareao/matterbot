@@ -34,6 +34,12 @@ fn main() {
              .short('d')
              .long("debug")
              .takes_value(false))
+        .subcommand(App::new("check")
+                    .about("Check")
+                    .subcommand(App::new("team")
+                                .about("Check if team exists")
+                                )
+                    )
         .subcommand(App::new("list")
                     .about("List")
                     .subcommand(App::new("users")
@@ -59,6 +65,38 @@ fn main() {
                                      .short('p')
                                      .required(true)
                                      .takes_value(true))
+                                )
+                    .subcommand(App::new("team")
+                                .about("Create a new team")
+                                .arg(Arg::new("name")
+                                     .short('n')
+                                     .required(true)
+                                     .takes_value(true))
+                                .arg(Arg::new("display_name")
+                                     .short('d')
+                                     .required(true)
+                                     .takes_value(true))
+                                .arg(Arg::new("private")
+                                     .short('p')
+                                     .required(false))
+                                )
+                    .subcommand(App::new("channel")
+                                .about("Create a new channel")
+                                .arg(Arg::new("team_id")
+                                     .short('i')
+                                     .required(true)
+                                     .takes_value(true))
+                                .arg(Arg::new("name")
+                                     .short('n')
+                                     .required(true)
+                                     .takes_value(true))
+                                .arg(Arg::new("display_name")
+                                     .short('d')
+                                     .required(true)
+                                     .takes_value(true))
+                                .arg(Arg::new("private")
+                                     .short('p')
+                                     .required(false))
                                 )
                     )
         .subcommand(App::new("post")
@@ -99,6 +137,23 @@ fn main() {
                 Ok(result) => println!("{}", result.text().unwrap()),
                 Err(result) => println!("{}", result.to_string())
             }
+        }else if let Some(subsub) = sub.subcommand_matches("channel"){
+            let team_id = subsub.value_of("team_id").unwrap();
+            let name = subsub.value_of("name").unwrap();
+            let display_name = subsub.value_of("display_name").unwrap();
+            let private = subsub.is_present("private");
+            match bot.create_channel(team_id, name, display_name, private){
+                Ok(result) => println!("{}", result.text().unwrap()),
+                Err(result) => println!("{}", result.to_string())
+            }
+        }else if let Some(subsub) = sub.subcommand_matches("team"){
+            let name = subsub.value_of("name").unwrap();
+            let display_name = subsub.value_of("display_name").unwrap();
+            let private = subsub.is_present("private");
+            match bot.create_team(name, display_name, private){
+                Ok(result) => println!("{}", result.text().unwrap()),
+                Err(result) => println!("{}", result.to_string())
+            }
         }
     }else if let Some(sub) = matches.subcommand_matches("list"){
         if let Some(_subsub) = sub.subcommand_matches("channels"){
@@ -108,6 +163,14 @@ fn main() {
             }
         }else if let Some(_subsub) = sub.subcommand_matches("users"){
             match bot.list_users(){
+                Ok(result) => println!("{}", result.text().unwrap()),
+                Err(result) => println!("{}", result.to_string())
+            }
+        }
+    }else if let Some(sub) = matches.subcommand_matches("chek"){
+        if let Some(subsub) = sub.subcommand_matches("team"){
+            let name = subsub.value_of("name").unwrap();
+            match bot.check_team(name){
                 Ok(result) => println!("{}", result.text().unwrap()),
                 Err(result) => println!("{}", result.to_string())
             }
