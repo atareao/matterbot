@@ -70,7 +70,12 @@ impl Bot{
         self.post(&url, Some(body))
     }
 
-    pub fn list_teasms(&self) -> Result<Response, Error>{
+    pub fn list_roles(&self) -> Result<Response, Error>{
+        let url = format!("{}://{}/api/v4/roles", self.protocol, self.base_uri);
+        self.get(&url)
+    }
+
+    pub fn list_teams(&self) -> Result<Response, Error>{
         let url = format!("{}://{}/api/v4/teams", self.protocol, self.base_uri);
         self.get(&url)
     }
@@ -88,7 +93,6 @@ impl Bot{
     fn get(&self, url: &str)->Result<Response, Error>{
         println!("URL: {}", url);
         let mut header_map = HeaderMap::new();
-        println!("{}", self.token);
         header_map.insert(HeaderName::from_str("Authorization").unwrap(),
                           HeaderValue::from_str(&format!("Bearer {}", self.token)).unwrap());
         let client = Client::builder()
@@ -112,7 +116,6 @@ impl Bot{
         match body{
             Some(value) => {
                 let content = serde_json::to_string(&value).unwrap();
-                println!("The content: {}", content);
                 client.post(url).body(content).send()},
             None => client.post(url).send(),
         }

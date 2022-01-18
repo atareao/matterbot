@@ -5,6 +5,7 @@ use crate::utils::read_from_toml;
 use crate::bot::Bot;
 use clap::{App, Arg, AppSettings};
 use dirs::config_dir;
+use serde_json::Value;
 
 const NAME: &str =env!("CARGO_PKG_NAME");
 const DESCRIPTION: &str =env!("CARGO_PKG_DESCRIPTION");
@@ -47,6 +48,12 @@ fn main() {
                                 )
                     .subcommand(App::new("channels")
                                 .about("List channels")
+                                )
+                    .subcommand(App::new("teams")
+                                .about("List teams")
+                                )
+                    .subcommand(App::new("roles")
+                                .about("List roles")
                                 )
                     )
         .subcommand(App::new("create")
@@ -158,12 +165,43 @@ fn main() {
     }else if let Some(sub) = matches.subcommand_matches("list"){
         if let Some(_subsub) = sub.subcommand_matches("channels"){
             match bot.list_channels(){
-                Ok(result) => println!("{}", result.text().unwrap()),
+                Ok(result) => {
+                    let v: Vec<Value> = serde_json::from_str(&result.text().unwrap()).unwrap();
+                    for item in &v{
+                        println!("{} - {}", item["id"], item["display_name"]);
+                    }
+                },
                 Err(result) => println!("{}", result.to_string())
             }
         }else if let Some(_subsub) = sub.subcommand_matches("users"){
             match bot.list_users(){
-                Ok(result) => println!("{}", result.text().unwrap()),
+                Ok(result) => {
+                    let v: Vec<Value> = serde_json::from_str(&result.text().unwrap()).unwrap();
+                    for item in &v{
+                        println!("{} - {}", item["id"], item["username"]);
+                        //println!("{:?}", item);
+                    }
+                },
+                Err(result) => println!("{}", result.to_string())
+            }
+        }else if let Some(_subsub) = sub.subcommand_matches("teams"){
+            match bot.list_teams(){
+                Ok(result) => {
+                    let v: Vec<Value> = serde_json::from_str(&result.text().unwrap()).unwrap();
+                    for item in &v{
+                        println!("{} - {}", item["id"], item["display_name"]);
+                    }
+                },
+                Err(result) => println!("{}", result.to_string())
+            }
+        }else if let Some(_subsub) = sub.subcommand_matches("roles"){
+            match bot.list_roles(){
+                Ok(result) => {
+                    let v: Vec<Value> = serde_json::from_str(&result.text().unwrap()).unwrap();
+                    for item in &v{
+                        println!("{} - {}", item["id"], item["display_name"]);
+                    }
+                },
                 Err(result) => println!("{}", result.to_string())
             }
         }
