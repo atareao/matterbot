@@ -55,6 +55,9 @@ fn main() {
                     .subcommand(App::new("roles")
                                 .about("List roles")
                                 )
+                    .subcommand(App::new("webhooks")
+                                .about("List webhooks")
+                                )
                     )
         .subcommand(App::new("create")
                     .about("Create")
@@ -190,6 +193,16 @@ fn main() {
                     let v: Vec<Value> = serde_json::from_str(&result.text().unwrap()).unwrap();
                     for item in &v{
                         println!("{} - {}", item["id"], item["display_name"]);
+                    }
+                },
+                Err(result) => println!("{}", result.to_string())
+            }
+        }else if let Some(_subsub) = sub.subcommand_matches("webhooks"){
+            match bot.list_webhooks(){
+                Ok(result) => {
+                    let v: Vec<Value> = serde_json::from_str(&result.text().unwrap()).unwrap();
+                    for item in &v{
+                        println!("{} - {} - {}", item["id"], item["display_name"], item["channel_id"]);
                     }
                 },
                 Err(result) => println!("{}", result.to_string())

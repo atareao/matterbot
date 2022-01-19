@@ -70,6 +70,11 @@ impl Bot{
         self.post(&url, Some(body))
     }
 
+    pub fn list_webhooks(&self) -> Result<Response, Error>{
+        let url = format!("{}://{}/api/v4/hooks/incoming", self.protocol, self.base_uri);
+        self.get(&url)
+    }
+
     pub fn list_roles(&self) -> Result<Response, Error>{
         let url = format!("{}://{}/api/v4/roles", self.protocol, self.base_uri);
         self.get(&url)
