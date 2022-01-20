@@ -24,6 +24,23 @@ impl Bot{
         self.get(&url)
     }
 
+    pub fn create_outgoing_webhook(&self, team_id: &str, display_name: &str, words: Vec<&str>) -> Result<Response, Error>{
+        let url = format!("{}://{}/api/v4/hooks/outgoing", self.protocol, self.base_uri);
+        let body = json!({
+                "team_id": team_id,
+                "display_name": display_name,
+                "trigger_words": words
+            });
+        self.post(&url, Some(body))
+    }
+    pub fn create_incoming_webhook(&self, team_id: &str, display_name: &str) -> Result<Response, Error>{
+        let url = format!("{}://{}/api/v4/hooks/incoming", self.protocol, self.base_uri);
+        let body = json!({
+                "team_id": team_id,
+                "display_name": display_name
+            });
+        self.post(&url, Some(body))
+    }
     pub fn create_channel(&self, team_id: &str, name: &str, display_name: &str, private: bool) -> Result<Response, Error>{
         let url = format!("{}://{}/api/v4/channels", self.protocol, self.base_uri);
         let body = json!({
@@ -70,7 +87,12 @@ impl Bot{
         self.post(&url, Some(body))
     }
 
-    pub fn list_webhooks(&self) -> Result<Response, Error>{
+    pub fn list_outgoing_webhooks(&self) -> Result<Response, Error>{
+        let url = format!("{}://{}/api/v4/hooks/outgoing", self.protocol, self.base_uri);
+        self.get(&url)
+    }
+
+    pub fn list_incoming_webhooks(&self) -> Result<Response, Error>{
         let url = format!("{}://{}/api/v4/hooks/incoming", self.protocol, self.base_uri);
         self.get(&url)
     }

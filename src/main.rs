@@ -57,6 +57,12 @@ fn main() {
                                 )
                     .subcommand(App::new("webhooks")
                                 .about("List webhooks")
+                                .subcommand(App::new("incoming")
+                                            .about("List incoming webhooks")
+                                            )
+                                .subcommand(App::new("outgoing")
+                                            .about("List outgoing webhooks")
+                                            )
                                 )
                     )
         .subcommand(App::new("create")
@@ -108,7 +114,36 @@ fn main() {
                                      .short('p')
                                      .required(false))
                                 )
-                    )
+                    .subcommand(App::new("webhook")
+                                .about("Create a new webhook")
+                                .subcommand(App::new("incoming")
+                                            .about("Create a new incoming webhook")
+                                            .arg(Arg::new("channel_id")
+                                                 .short('c')
+                                                 .required(true)
+                                                 .takes_value(true))
+                                            .arg(Arg::new("display_name")
+                                                 .short('d')
+                                                 .required(true)
+                                                 .takes_value(true))
+                                            )
+                                )
+                                .subcommand(App::new("outgoing")
+                                            .about("Create a new outgoind webhook")
+                                            .arg(Arg::new("channel_id")
+                                                 .short('c')
+                                                 .required(true)
+                                                 .takes_value(true))
+                                            .arg(Arg::new("display_name")
+                                                 .short('d')
+                                                 .required(true)
+                                                 .takes_value(true))
+                                            .arg(Arg::new("words")
+                                                 .short('w')
+                                                 .required(true)
+                                                 .takes_value(true))
+                                            )
+                                )
         .subcommand(App::new("post")
                     .about("Post")
                     .subcommand(App::new("message")
@@ -164,6 +199,24 @@ fn main() {
                 Ok(result) => println!("{}", result.text().unwrap()),
                 Err(result) => println!("{}", result.to_string())
             }
+        }else if let Some(subsub) = sub.subcommand_matches("webhook"){
+            if let Some(sub3) = subsub.subcommand_matches("incoming"){
+                let team_id = sub3.value_of("team_id").unwrap();
+                let display_name = sub3.value_of("display_name").unwrap();
+                match bot.create_incoming_webhook(team_id, display_name){
+                    Ok(result) => println!("{}", result.text().unwrap()),
+                    Err(result) => println!("{}", result.to_string())
+                }
+            }else if let Some(sub3) = subsub.subcommand_matches("outgoing"){
+                let team_id = sub3.value_of("team_id").unwrap();
+                let display_name = sub3.value_of("display_name").unwrap();
+                let words = sub3.value_of("words").unwrap().split(' ').collect();
+                match bot.create_outgoing_webhook(team_id, display_name, words){
+                    Ok(result) => println!("{}", result.text().unwrap()),
+                    Err(result) => println!("{}", result.to_string())
+                }
+
+            }
         }
     }else if let Some(sub) = matches.subcommand_matches("list"){
         if let Some(_subsub) = sub.subcommand_matches("channels"){
@@ -197,15 +250,27 @@ fn main() {
                 },
                 Err(result) => println!("{}", result.to_string())
             }
-        }else if let Some(_subsub) = sub.subcommand_matches("webhooks"){
-            match bot.list_webhooks(){
-                Ok(result) => {
-                    let v: Vec<Value> = serde_json::from_str(&result.text().unwrap()).unwrap();
-                    for item in &v{
-                        println!("{} - {} - {}", item["id"], item["display_name"], item["channel_id"]);
-                    }
-                },
-                Err(result) => println!("{}", result.to_string())
+        }else if let Some(subsub) = sub.subcommand_matches("webhooks"){
+            if let Some(_sub3) = subsub.subcommand_matches("incoming"){
+                match bot.list_incoming_webhooks(){
+                    Ok(result) => {
+                        let v: Vec<Value> = serde_json::from_str(&result.text().unwrap()).unwrap();
+                        for item in &v{
+                            println!("{} - {} - {}", item["id"], item["display_name"], item["channel_id"]);
+                        }
+                    },
+                    Err(result) => println!("{}", result.to_string())
+                }
+            }else if let Some(_sub3) = subsub.subcommand_matches("outgoing"){
+                match bot.list_outgoing_webhooks(){
+                    Ok(result) => {
+                        let v: Vec<Value> = serde_json::from_str(&result.text().unwrap()).unwrap();
+                        for item in &v{
+                            println!("{} - {} - {}", item["id"], item["display_name"], item["channel_id"]);
+                        }
+                    },
+                    Err(result) => println!("{}", result.to_string())
+                }
             }
         }else if let Some(_subsub) = sub.subcommand_matches("roles"){
             match bot.list_roles(){
