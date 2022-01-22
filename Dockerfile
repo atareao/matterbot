@@ -34,16 +34,16 @@ RUN apk --update --no-cache add tini && \
     echo "**** create user ****" && \
     addgroup dockeruser && \
     adduser -h /app -G dockeruser -D dockeruser && \
-    mkdir -p /app/conf && \
+    mkdir -p /app/.config/matterbot && \
     chown -R dockeruser:dockeruser /app
 
 WORKDIR /app
 
 # Copy our build
-COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/matterbot ./
+COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/matterbot /usr/bin/
 
 # Use an unprivileged user.
 USER dockeruser
 
 ENTRYPOINT ["tini", "--"]
-CMD ["./matterbot"]
+CMD ["matterbot"]
