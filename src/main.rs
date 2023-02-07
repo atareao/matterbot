@@ -1,11 +1,11 @@
 mod bot;
 mod utils;
 
-use crate::utils::read_from_toml;
+use dotenv::dotenv;
 use crate::bot::Bot;
 use clap::{App, Arg, AppSettings};
-use dirs::config_dir;
 use serde_json::Value;
+use std::env;
 
 const NAME: &str =env!("CARGO_PKG_NAME");
 const DESCRIPTION: &str =env!("CARGO_PKG_DESCRIPTION");
@@ -14,18 +14,12 @@ const AUTHORS: &str =env!("CARGO_PKG_AUTHORS");
 
 
 fn main() {
-    let config_path = config_dir().unwrap()
-        .join("matterbot")
-        .join("matterbot.conf");
-    if !config_path.exists(){
-        println!("Configure MatterMost Bot");
-        return;
-    }
-    let config = read_from_toml(config_path.to_str().unwrap());
-    let protocol = config.get("PROTOCOL").unwrap();
-    let base_uri = config.get("BASE_URI").unwrap();
-    let token = config.get("TOKEN").unwrap();
-    let bot = Bot::new(protocol, base_uri, token);
+    dotenv().ok();
+    let protocol = env::var("PROTOCOL").expect("PROTOCOL not set");
+    let base_uri = env::var("BASE_URI").expect("BASE_URI not set");
+    let token = env::var("TOKEN").expect("TOKEN not set");
+
+    let bot = Bot::new(&protocol, &base_uri, &token);
     let matches = App::new(NAME)
         .version(VERSION)
         .author(AUTHORS)

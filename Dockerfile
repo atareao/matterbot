@@ -3,20 +3,26 @@
 ###############################################################################
 FROM rust:latest AS builder
 
+LABEL maintainer="Lorenzo Carbonell <a.k.a. atareao> lorenzo.carbonell.cerezo@gmail.com"
+
+ARG TARGET=x86_64-unknown-linux-musl
+ENV RUST_MUSL_CROSS_TARGET=$TARGET
+ENV OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"
+ENV OPENSSL_INCLUDE_DIR="/usr/include/openssl"
+
 RUN rustup target add x86_64-unknown-linux-musl && \
     apt-get update && \
     apt-get install -y \
+        --no-install-recommends\
+        pkg-config \
         musl-tools \
         build-essential \
         cmake \
         musl-dev \
+        pkg-config \
         libssl-dev \
-        libasound2-dev \
         && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
-
-ARG TARGET=x86_64-unknown-linux-musl
-ENV RUST_MUSL_CROSS_TARGET=$TARGET
 
 WORKDIR /app
 
@@ -27,23 +33,22 @@ RUN cargo build  --target x86_64-unknown-linux-musl --release
 ###############################################################################
 ## Final image
 ###############################################################################
-FROM alpine
+FROM alpine:3.16
 
-RUN apk --update --no-cache add tini && \
-    rm -rf /var/lib/apt/lists/* && \
-    echo "**** create user ****" && \
-    addgroup dockeruser && \
-    adduser -h /app -G dockeruser -D dockeruser && \
-    mkdir -p /app/.config/matterbot && \
-    chown -R dockeruser:dockeruser /app
+ARG APP=matterbot
 
+RUN apk add --update --no-cache \
+            su-exec~=0.2-r1 \
+            tzdata~=2022c-r0 && \
+    rm -rf /var/cache/apk && \
+    rm -rf /var/lib/app/lists*
+
+# Set the work dir
 WORKDIR /app
+COPY entrypoint.sh /app/
 
 # Copy our build
-COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/matterbot /usr/bin/
+COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/$APP /app/
 
-# Use an unprivileged user.
-USER dockeruser
-
-ENTRYPOINT ["tini", "--"]
-CMD ["matterbot"]
+ENTRYPOINT ["/bin/sh", "/app/entrypoint.sh"]
+CMD ["/app/matterbot"]
